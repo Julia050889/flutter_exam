@@ -77,8 +77,8 @@ class FormArrayPage extends StatelessWidget {
                               onDismissed: (direction) {
                                 formArray.removeAt(index);
                               },
-                              child:
-                                  buildItem(state.array.controls[index]),
+                              child: buildItem(state.array.controls[index],
+                                  index),
                             );
                           }));
                 })
@@ -88,7 +88,7 @@ class FormArrayPage extends StatelessWidget {
     );
   }
 
-  Widget buildItem(formArray) {
+  Widget buildItem(formArray, ind) {
     return Container(
       padding: const EdgeInsets.all(10),
       margin: const EdgeInsets.only(bottom: 20),
@@ -140,7 +140,7 @@ class FormArrayPage extends StatelessWidget {
                   Icons.delete,
                 ),
                 onPressed: () {
-                  formArray;
+                  formArray.parent.removeAt(ind);
                 },
               ),
               Row(
