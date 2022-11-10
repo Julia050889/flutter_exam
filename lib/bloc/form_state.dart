@@ -16,21 +16,17 @@ part of 'form_bloc.dart';
 //   List<Object?> get props => [showPassword];
 // }
 
+class FormPageState extends Equatable {
+  final FormArray array;
+  //final FormGroup group;
 
+  const FormPageState({required this.array});
 
+  FormPageState copyWith({FormArray? array, FormGroup? group}) {
+    return FormPageState(array: array ?? this.array);
+  }
 
-// class FormState extends Equatable {
-//   final FormGroup? form;
-
-//   const FormState({required this.form});
-
-//   FormState copyWith({FormGroup? from}) {
-//     return FormState(
-//       form: form ?? this.form,
-//     );
-//   }
-
-//   @override
-//   // TODO: implement props
-//   List<Object?> get props => [form];
-// }
+  @override
+  // TODO: implement props
+  List<Object?> get props => [array];
+}

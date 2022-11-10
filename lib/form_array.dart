@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_exam/bloc/form_bloc.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 import 'package:reactive_dropdown_search/reactive_dropdown_search.dart';
 
-final form = FormArray([
-  FormGroup({
-    'relationship': FormControl<String>(value: ''),
-    'position': FormControl<String>(),
-    'note': FormControl<String>(),
-  })
-]);
+var myList = [];
 
 class FormArrayPage extends StatelessWidget {
   const FormArrayPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Form Array'),
-        centerTitle: true,
+    return BlocProvider<FormPageBloc>(
+      create: (context) => FormPageBloc(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Form Array'),
+          centerTitle: true,
+        ),
+        body: buildForm(),
       ),
-      body: buildForm(),
     );
   }
 
@@ -28,43 +27,64 @@ class FormArrayPage extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.all(10),
       padding: const EdgeInsets.all(10),
-      child: Column(children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Relationship',
-                style: TextStyle(color: Colors.red, fontSize: 25)),
-            Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey)),
-              child: IconButton(
-                onPressed: () {
-                  form.add(FormGroup({
-                    'position': FormControl<String>(),
-                    'relationship': FormControl<String>(),
-                    'note': FormControl(),
-                  }));
-                },
-                icon: const Icon(Icons.add),
-                color: Colors.red,
-              ),
+      child: BlocBuilder<FormPageBloc, FormPageState>(
+        builder: (context, state) {
+          return Column(children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Relationship'.toUpperCase(),
+                    style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold)),
+                Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey)),
+                  child: IconButton(
+                    onPressed: () {
+                      context.read<FormPageBloc>().add(
+                            OnAddFormGroupEvent(
+                              FormGroup(
+                                {
+                                  'relationship': FormControl<String>(),
+                                  'note': FormControl<String>(),
+                                  'position': FormControl<String>()
+                                },
+                              ),
+                            ),
+                          );
+                    },
+                    icon: const Icon(Icons.add),
+                    color: Colors.red,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        ReactiveFormArray(
-            formArray: form,
-            builder: (context, formArray, child) => Expanded(
-                  child: ListView.builder(
-                      itemCount: form.controls.length,
-                      itemBuilder: (context, index) {
-                        return buildItem(form.controls[index]);
-                      }),
-                )),
-      ]),
+            const SizedBox(
+              height: 20,
+            ),
+            ReactiveFormArray(
+                formArray: state.array,
+                builder: (context, formArray, child) {
+                  return Expanded(
+                      child: ListView.builder(
+                          itemCount: state.array.controls.length,
+                          itemBuilder: (context, index) {
+                            return Dismissible(
+                              key: Key(state.array.controls.toString()),
+                              onDismissed: (direction) {
+                                formArray.removeAt(index);
+                              },
+                              child:
+                                  buildItem(state.array.controls[index]),
+                            );
+                          }));
+                })
+          ]);
+        },
+      ),
     );
   }
 
@@ -97,7 +117,10 @@ class FormArrayPage extends StatelessWidget {
                   width: 10,
                 ),
                 Expanded(
-                  child: ReactiveTextField(formControlName: 'position'),
+                  child: ReactiveTextField(
+                    formControlName: 'position',
+                    decoration: const InputDecoration(labelText: 'Position'),
+                  ),
                 )
               ],
             ),
@@ -116,7 +139,9 @@ class FormArrayPage extends StatelessWidget {
                 icon: const Icon(
                   Icons.delete,
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  formArray;
+                },
               ),
               Row(
                 children: [
@@ -128,15 +153,56 @@ class FormArrayPage extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          IconButton(
-                              onPressed: () {}, icon: const Icon(Icons.close)),
-                          const Text('Cancel'),
+                          TextButton(
+                            onPressed: () {
+                              formArray.reset();
+                            },
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.close,
+                                  color: Colors.grey,
+                                ),
+                                const Text(
+                                  'Cancel',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ],
+                            ),
+                          )
                         ],
                       )),
                   const SizedBox(
                     width: 20,
                   ),
-                  const Text('Save'),
+                  Container(
+                      padding: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              myList.add(formArray.value);
+                              print(myList);
+                            },
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.done,
+                                  color: Colors.grey,
+                                ),
+                                const Text(
+                                  'Save',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      )),
                 ],
               ),
             ]),
